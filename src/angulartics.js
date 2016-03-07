@@ -1,3 +1,4 @@
+/*eslint-disable */
 /**
  * @license Angulartics
  * (c) 2013 Luis Farzati http://luisfarzati.github.io/angulartics
@@ -24,7 +25,7 @@ angulartics.waitForVendorApi = function (objectName, delay, containsField, regis
  * @ngdoc overview
  * @name angulartics
  */
-angular.module('angulartics', [])
+angular.module('dkShared')
 .provider('$analytics', $analytics)
 .run(['$rootScope', '$window', '$analytics', '$injector', $analyticsRun])
 .directive('analyticsOn', ['$analytics', analyticsOn]);
@@ -32,8 +33,8 @@ angular.module('angulartics', [])
 function $analytics() {
   var settings = {
     pageTracking: {
-      autoTrackFirstPage: true,
-      autoTrackVirtualPages: true,
+      autoTrackFirstPage: false,
+      autoTrackVirtualPages: false,
       trackRelativePath: false,
       autoBasePath: false,
       basePath: '',
@@ -308,6 +309,11 @@ function analyticsOn($analytics) {
         if($attrs.analyticsProperties){
           angular.extend(trackingData, $scope.$eval($attrs.analyticsProperties));
         }
+
+        if (typeof getSystemAttributes === "function"){
+          angular.extend(trackingData, getSystemAttributes());
+        }
+
         $analytics.eventTrack(eventName, trackingData);
       });
     }
@@ -330,7 +336,7 @@ function inferEventName(element) {
 }
 
 function isProperty(name) {
-  return name.substr(0, 9) === 'analytics' && ['On', 'Event', 'If', 'Properties', 'EventType'].indexOf(name.substr(9)) === -1;
+  return name.substr(0, 9) === 'analytics';
 }
 
 function propertyName(name) {
