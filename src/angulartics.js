@@ -25,7 +25,7 @@ angulartics.waitForVendorApi = function (objectName, delay, containsField, regis
  * @ngdoc overview
  * @name angulartics
  */
-angular.module('dkShared')
+angular.module('angulartics', [])
 .provider('$analytics', $analytics)
 .run(['$rootScope', '$window', '$analytics', '$injector', $analyticsRun])
 .directive('analyticsOn', ['$analytics', analyticsOn]);
