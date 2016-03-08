@@ -11,7 +11,8 @@ angulartics.waitForVendorCount = 0;
 angulartics.waitForVendorApi = function (objectName, delay, containsField, registerFn, onTimeout) {
   if (!onTimeout) { angulartics.waitForVendorCount++; }
   if (!registerFn) { registerFn = containsField; containsField = undefined; }
-  if (!Object.prototype.hasOwnProperty.call(window, objectName) || (containsField !== undefined && window[objectName][containsField] === undefined)) {
+  if (!Object.prototype.hasOwnProperty.call(window, objectName) ||
+    (angular.isDefined(containsField) && angular.isUndefined(window[objectName][containsField]))) {
     setTimeout(function () { angulartics.waitForVendorApi(objectName, delay, containsField, registerFn, true); }, delay);
   }
   else {
@@ -32,8 +33,8 @@ angular.module('angulartics', [])
 function $analytics() {
   var settings = {
     pageTracking: {
-      autoTrackFirstPage: true,
-      autoTrackVirtualPages: true,
+      autoTrackFirstPage: false,
+      autoTrackVirtualPages: false,
       trackRelativePath: false,
       autoBasePath: false,
       basePath: '',
@@ -272,6 +273,11 @@ function analyticsOn($analytics) {
         if($attrs.analyticsProperties){
           angular.extend(trackingData, $scope.$eval($attrs.analyticsProperties));
         }
+
+        if (typeof getSystemAttributes === "function"){
+          angular.extend(trackingData, getSystemAttributes());
+        }
+
         $analytics.eventTrack(eventName, trackingData);
       });
     }
@@ -294,7 +300,7 @@ function inferEventName(element) {
 }
 
 function isProperty(name) {
-  return name.substr(0, 9) === 'analytics' && ['On', 'Event', 'If', 'Properties', 'EventType'].indexOf(name.substr(9)) === -1;
+  return name.substr(0, 9) === 'analytics';
 }
 
 function propertyName(name) {
