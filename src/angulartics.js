@@ -28,7 +28,7 @@ angulartics.waitForVendorApi = function (objectName, delay, containsField, regis
 angular.module('angulartics', [])
 .provider('$analytics', $analytics)
 .run(['$rootScope', '$window', '$analytics', '$injector', $analyticsRun])
-.directive('analyticsOn', ['$analytics', analyticsOn]);
+.directive('analyticsOn', ['$analytics', '$rootScope', analyticsOn]);
 
 function $analytics() {
   var settings = {
@@ -61,7 +61,6 @@ function $analytics() {
   // Cache and handler properties will match values in 'knownHandlers' as the buffering functons are installed.
   var cache = {};
   var handlers = {};
-  var handlerOptions = {};
 
   // General buffering handler
   function bufferedHandler(handlerName){
@@ -74,28 +73,16 @@ function $analytics() {
   }
 
   // As handlers are installed by plugins, they get pushed into a list and invoked in order.
-  function updateHandlers(handlerName, fn, options){
+    function updateHandlers(handlerName, fn){
     if(!handlers[handlerName]){
       handlers[handlerName] = [];
     }
     handlers[handlerName].push(fn);
-    handlerOptions[fn] = options;
     return function(){
-      var handlerArgs = Array.prototype.slice.apply(arguments);
-      return this.$inject(['$q', angular.bind(this, function($q) {
-        return $q.all(handlers[handlerName].map(function(handlerFn) {
-          var options = handlerOptions[handlerFn] || {};
-          if (options.async) {
-            var deferred = $q.defer();
-            var currentArgs = angular.copy(handlerArgs);
-            currentArgs.unshift(deferred.resolve);
-            handlerFn.apply(this, currentArgs);
-            return deferred.promise;
-          } else{
-            return $q.when(handlerFn.apply(this, handlerArgs));
-          }
-        }, this));
-      })]);
+        var handlerArgs = arguments;
+        angular.forEach(handlers[handlerName], function(handler){
+          handler.apply(this, handlerArgs);
+        }, this);
     };
   }
 
@@ -116,9 +103,7 @@ function $analytics() {
   }
 
   var provider = {
-    $get: function($injector) {
-      return apiWithInjector($injector);
-    },
+      $get: function() { return api; },
     api: api,
     settings: settings,
     virtualPageviews: function (value) { this.settings.pageTracking.autoTrackVirtualPages = value; },
@@ -132,8 +117,8 @@ function $analytics() {
   };
 
   // General function to register plugin handlers. Flushes buffers immediately upon registration according to the specified delay.
-  function register(handlerName, fn, options){
-    api[handlerName] = updateHandlers(handlerName, fn, options);
+    function register(handlerName, fn){
+      api[handlerName] = updateHandlers(handlerName, fn);
     var handlerSettings = settings[handlerName];
     var handlerDelay = (handlerSettings) ? handlerSettings.bufferFlushDelay : null;
     var delay = (handlerDelay !== null) ? handlerDelay : settings.bufferFlushDelay;
@@ -148,18 +133,11 @@ function $analytics() {
       });
   }
 
-  //provide a method to inject services into handlers
-  var apiWithInjector = function(injector) {
-    return angular.extend(api, {
-      '$inject': injector.invoke
-    });
-  };
-
   // Adds to the provider a 'register#{handlerName}' function that manages multiple plugins and buffer flushing.
   function installHandlerRegisterFunction(handlerName){
     var registerName = 'register'+capitalize(handlerName);
-    provider[registerName] = function(fn, options){
-      register(handlerName, fn, options);
+      provider[registerName] = function(fn){
+        register(handlerName, fn);
     };
     api[handlerName] = updateHandlers(handlerName, bufferedHandler(handlerName));
   }
@@ -236,26 +214,12 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
           pageTrack(url, $location);
         });
       }
-      if ($injector.has('$state') && !$injector.has('$transitions')) {
+        if ($injector.has('$state')) {
         noRoutesOrStates = false;
         $rootScope.$on('$stateChangeSuccess', function (event, current) {
           var url = $analytics.settings.pageTracking.basePath + $location.url();
           pageTrack(url, $location);
         });
-      }
-      if ($injector.has('$state') && $injector.has('$transitions')) {
-        noRoutesOrStates = false;
-        $injector.invoke(['$transitions', function($transitions) {
-          $transitions.onSuccess({}, function($transition$) {
-            var transitionOptions = $transition$.options();
-
-            // only track for transitions that would have triggered $stateChangeSuccess
-            if (transitionOptions.notify) {
-              var url = $analytics.settings.pageTracking.basePath + $location.url();
-              pageTrack(url, $location);
-            }
-          });
-        }]);
       }
       if (noRoutesOrStates) {
         $rootScope.$on('$locationChangeSuccess', function (event, current) {
@@ -279,7 +243,7 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
   }
 }
 
-function analyticsOn($analytics) {
+  function analyticsOn($analytics, $rootScope) {
   return {
     restrict: 'A',
     link: function ($scope, $element, $attrs) {
@@ -314,7 +278,33 @@ function analyticsOn($analytics) {
           angular.extend(trackingData, getSystemAttributes());
         }
 
+
+          setTimeStamp();
+          setClickCount();
+
         $analytics.eventTrack(eventName, trackingData);
+
+          function setTimeStamp() {
+            let d1 = new Date();
+            let sqlFormat =
+                d1.getUTCFullYear() + '-' +
+                d1.getUTCMonth() + '-' +
+                d1.getUTCDate() + ' ' +
+                d1.getUTCHours() + ':' +
+                d1.getUTCMinutes() + ':' +
+                d1.getUTCSeconds();
+            ga('set', 'dimension6', sqlFormat);
+          }
+
+          function setClickCount(){
+
+            let clicks = $rootScope.clicks;
+            $rootScope.clicks = 0;
+
+            ga('set', 'dimension7', clicks);
+            ga('set', 'metric1', clicks);
+          }
+
       });
     }
   };
