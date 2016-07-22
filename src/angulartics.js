@@ -285,8 +285,8 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
         $analytics.eventTrack(eventName, trackingData);
 
           function setTimeStamp() {
-            let d1 = new Date();
-            let sqlFormat =
+            var d1 = new Date();
+            var sqlFormat =
                 d1.getUTCFullYear() + '-' +
                 d1.getUTCMonth() + '-' +
                 d1.getUTCDate() + ' ' +
@@ -298,7 +298,7 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
 
           function setClickCount(){
 
-            let clicks = $rootScope.clicks;
+            var clicks = $rootScope.clicks;
             $rootScope.clicks = 0;
 
             ga('set', 'dimension7', clicks);
