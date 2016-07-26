@@ -7,7 +7,7 @@
       .config(['$analyticsProvider', function ($analyticsProvider) {
 
         $analyticsProvider.registerEventTrack(function(action, properties) {
-          ga('set', 'dimension8', 'action');
+          ga('set', 'dimension8', action);
           ga('send', 'pageview');
         });
 
