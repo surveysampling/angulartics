@@ -288,7 +288,7 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
             var d1 = new Date();
             var sqlFormat =
                 d1.getUTCFullYear() + '-' +
-                d1.getUTCMonth() + '-' +
+                (d1.getUTCMonth() + 1) + '-' +  //+1 needed as Javascript start from 0
                 d1.getUTCDate() + ' ' +
                 d1.getUTCHours() + ':' +
                 d1.getUTCMinutes() + ':' +
