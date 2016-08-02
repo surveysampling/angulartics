@@ -8,7 +8,8 @@
 
         $analyticsProvider.registerEventTrack(function(action, properties) {
           ga('set', 'dimension8', action);
-          ga('send', 'pageview');
+          ga('send', 'event', action, action);
+
         });
 
       }]);

@@ -280,6 +280,7 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
 
 
           setTimeStamp();
+          getAndSetInteractiveTime();
           setClickCount();
 
         $analytics.eventTrack(eventName, trackingData);
@@ -303,6 +304,14 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
 
             ga('set', 'dimension7', clicks);
             ga('set', 'metric1', clicks);
+          }
+
+          function getAndSetInteractiveTime(){
+
+            var activeTime = Math.ceil($rootScope.activeTime / 1000);
+            $rootScope.activeTime = 0;
+
+            ga('set', 'metric2', activeTime);
           }
 
       });
