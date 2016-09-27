@@ -1,4 +1,5 @@
 /*eslint-disable */
+/*global ga, statistics */
 /**
  * @license Angulartics
  * (c) 2013 Luis Farzati http://luisfarzati.github.io/angulartics
@@ -304,6 +305,7 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
 
             ga('set', 'dimension7', clicks);
             ga('set', 'metric1', clicks);
+            statistics.clicks = clicks;
           }
 
           function getAndSetInteractiveTime(){
@@ -312,6 +314,7 @@ function $analyticsRun($rootScope, $window, $analytics, $injector) {
             $rootScope.activeTime = 0;
 
             ga('set', 'metric2', activeTime);
+            statistics.timeSpent = activeTime;
           }
 
       });
