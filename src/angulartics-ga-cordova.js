@@ -15,7 +15,7 @@
       }])
       .run(['$http', function($http) {
         function sendAnalytics(eventType){
-          const url = `/api/user/userSessionTrack`;
+          var url = '/api/user/userSessionTrack';
 
           var data = {
             projectId : statistics.projectId,
