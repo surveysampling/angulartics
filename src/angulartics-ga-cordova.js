@@ -22,7 +22,9 @@
             section   : statistics.section,
             clicks    : statistics.clicks,
             timeSpent : statistics.timeSpent,
-            eventType : eventType
+            eventType : eventType,
+            lineId    : statistics.lineId,
+            optionId  : statistics.optionId
           };
           $http.put(url, data);
         }
